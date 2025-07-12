@@ -35,7 +35,12 @@ const swaggerOptions = {
       {
         url: `http://localhost:${PORT}`,
         description: 'Development server'
+      },
+      {
+        url: `https://emailserver-4gcn.onrender.com`,
+        description: 'Production server'
       }
+      
     ],
     components: {
       schemas: {
@@ -47,7 +52,7 @@ const swaggerOptions = {
               type: 'string',
               format: 'email',
               description: 'Recipient email address',
-              example: 'student@ashesi.edu.gh'
+              example: 'student@gmail.com'
             },
             to_name: {
               type: 'string',
@@ -75,7 +80,7 @@ const swaggerOptions = {
               type: 'string',
               format: 'email',
               description: 'Student email address',
-              example: 'student@ashesi.edu.gh'
+              example: 'student@gmail.com'
             },
             student_name: {
               type: 'string',
@@ -86,7 +91,7 @@ const swaggerOptions = {
               type: 'string',
               format: 'email',
               description: 'Tutor email address',
-              example: 'tutor@ashesi.edu.gh'
+              example: 'tutor@gmail.com'
             },
             tutor_name: {
               type: 'string',
