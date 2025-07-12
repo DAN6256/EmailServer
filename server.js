@@ -14,7 +14,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors()); // Enable CORS for frontend integration
+app.use(cors({
+  origin: [process.env.ORIGIN_1, process.env.ORIGIN_2] 
+}));
 
 // Swagger configuration
 const swaggerOptions = {
