@@ -176,7 +176,7 @@ const studentBookingConfirmationTemplate = (data) => {
         <p><strong>Phone:</strong> ${tutor_number}</p>
       </div>
       
-      <p>Your tutor has also receive notification of this booking. Please coordinate with them for the final venue details.</p>
+      <p>Your tutor has also received notification of this booking. Please coordinate with them for the final venue details.</p>
       
       <p>Best regards,<br>
       <strong>Peer Tutoring System</strong><br>
