@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: [process.env.ORIGIN_1, process.env.ORIGIN_2] 
+  origin: [process.env.ORIGIN_1, process.env.ORIGIN_2,process.env.ORIGIN_3] 
 }));
 
 // Swagger configuration
