@@ -14,9 +14,11 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(cors({
   origin: [process.env.ORIGIN_1, process.env.ORIGIN_2,process.env.ORIGIN_3] 
 }));
+
 
 // Swagger configuration
 const swaggerOptions = {
@@ -28,7 +30,7 @@ const swaggerOptions = {
       description: 'API for managing peer tutoring sessions and applications at Ashesi University',
       contact: {
         name: 'Peer Tutoring Program',
-        email: 'tutoring@ashesi.edu.gh'
+        email: 'booktutor.ashesi@gmail.com'
       }
     },
     servers: [
@@ -68,7 +70,7 @@ const swaggerOptions = {
               type: 'string',
               format: 'date',
               description: 'Date of application submission',
-              example: '2024-07-12'
+              example: '2025-07-12'
             }
           }
         },
@@ -96,7 +98,7 @@ const swaggerOptions = {
             tutor_name: {
               type: 'string',
               description: 'Tutor name',
-              example: 'Dr. John Smith'
+              example: 'John Smith'
             },
             tutor_number: {
               type: 'string',
@@ -152,7 +154,7 @@ const swaggerOptions = {
             timestamp: {
               type: 'string',
               format: 'date-time',
-              example: '2024-07-12T10:30:00.000Z'
+              example: '2025-07-12T10:30:00.000Z'
             }
           }
         }

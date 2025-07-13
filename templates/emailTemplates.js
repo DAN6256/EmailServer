@@ -90,6 +90,7 @@ const tutorBookingNotificationTemplate = (data) => {
       <div style="background-color: #d1ecf1; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #bee5eb;">
         <h4 style="color: #2c3e50; margin-top: 0;">Next Steps:</h4>
         <ul>
+          <li><strong>Accept Calender Invite for Reminder</strong></li>
           <li>Stay in touch with the student to arrange the meeting venue</li>
           <li>Prepare any necessary materials for the topic</li>
         </ul>
@@ -164,6 +165,7 @@ const studentBookingConfirmationTemplate = (data) => {
       <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
         <h4 style="color: #2c3e50; margin-top: 0;">Important Next Steps:</h4>
         <ul>
+          <li><strong>Accept Calender Invite for Reminder</strong></li>
           <li>Contact your tutor at <strong>${tutor_number}</strong> to confirm the venue</li>
           <li>Prepare specific questions about the topic</li>
           <li>Bring any relevant materials or challenges</li>
