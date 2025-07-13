@@ -378,7 +378,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Ashesi University** for the peer tutoring program
 - **Nodemailer** for email functionality
 - **Swagger** for API documentation
 - **Express.js** for the web framework
