@@ -394,6 +394,75 @@ app.get('/', (req, res) => {
   res.redirect('/api-docs');
 });
 
+// Add this endpoint to your existing Express app
+app.get('/api/config', (req, res) => {
+  try {
+    const config = {
+      // Firebase Configuration
+      FIREBASE_CONFIG: {
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID,
+        measurementId: process.env.FIREBASE_MEASUREMENT_ID
+      },
+
+      // EmailJS Configuration
+      EMAIL_CONFIG: {
+        SERVICE_ID: process.env.EMAILJS_SERVICE_ID,
+        TEMPLATE_ID: process.env.EMAILJS_TEMPLATE_ID,
+        PUBLIC_KEY: process.env.EMAILJS_PUBLIC_KEY
+      },
+
+      // Admin Emails Configuration
+      ADMIN_EMAILS: {
+        ADMIN_1: process.env.ADMIN_EMAIL_1,
+        ADMIN_2: process.env.ADMIN_EMAIL_2,
+        ADMIN_3: process.env.ADMIN_EMAIL_3,
+        ADMIN_4: process.env.ADMIN_EMAIL_4
+      },
+
+      // Special Access Emails Configuration
+      SPECIAL_ACCESS_EMAILS: {
+        SPECIAL_1: process.env.SPECIAL_EMAIL_1,
+        SPECIAL_2: process.env.SPECIAL_EMAIL_2,
+        SPECIAL_3: process.env.SPECIAL_EMAIL_3,
+        SPECIAL_4: process.env.SPECIAL_EMAIL_4,
+        SPECIAL_5: process.env.SPECIAL_EMAIL_5,
+        SPECIAL_6: process.env.SPECIAL_EMAIL_6
+      }
+    };
+
+    // Check if any required environment variables are missing
+    const missingVars = [];
+    
+    // Check Firebase config
+    Object.entries(config.FIREBASE_CONFIG).forEach(([key, value]) => {
+      if (!value) missingVars.push(`FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
+    });
+
+    // Check EmailJS config
+    Object.entries(config.EMAIL_CONFIG).forEach(([key, value]) => {
+      if (!value) missingVars.push(`EMAILJS_${key}`);
+    });
+
+    if (missingVars.length > 0) {
+      return res.status(500).json({
+        error: 'Missing environment variables',
+        missingVariables: missingVars
+      });
+    }
+
+    res.json(config);
+  } catch (error) {
+    console.error('Error fetching configuration:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
