@@ -7,7 +7,7 @@ const {
 const { generateICS, generatePersonalizedICS } = require('../utils/calendarUtils');
 
 // Send application confirmation email
-/*
+
 const sendApplicationConfirmation = async (data) => {
   try {
     const { to_email, to_name, courses, submission_date } = data;
@@ -30,7 +30,7 @@ const sendApplicationConfirmation = async (data) => {
     return { success: false, error: 'Failed to send email', details: error.message };
   }
 };
-
+/*
 // Send booking confirmation emails with better calendar integration
 const sendBookingConfirmation = async (data) => {
   try {
