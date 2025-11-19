@@ -30,7 +30,7 @@ const sendApplicationConfirmation = async (data) => {
     return { success: false, error: 'Failed to send email', details: error.message };
   }
 };
-/*
+
 const sendBookingConfirmation = async (data) => {
   try {
     // Destructure and sanitize inputs
@@ -144,7 +144,8 @@ const sendBookingConfirmation = async (data) => {
     console.error('Error sending booking confirmation:', error);
     return { success: false, error: 'Failed to send email', details: error.message };
   }
-};*/
+};
+/*
 const createGoogleCalendarLink = (subject, topic, time, type) => {
   const dateObj = new Date(time);
   
@@ -229,7 +230,7 @@ const sendBookingConfirmation = async (data) => {
     console.error('Error sending email:', error);
     return { success: false, error: 'Failed to send email', details: error.message };
   }
-};
+};*/
 // Alternative approach: Send personalized calendar invites
 const sendBookingConfirmationWithPersonalizedInvites = async (data) => {
   try {
