@@ -5,10 +5,11 @@ const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
 const sendEmailJS = async (serviceId, templateId, templateParams) => {
   // SAFETY CHECK
-  if (!serviceId || !templateId) {
-    console.error(`❌ EmailJS Config Error: Missing ID. Service: ${serviceId}, Template: ${templateId}`);
-    return { success: false, error: 'Missing Service ID or Template ID' };
-  }
+  console.log("DEBUG KEYS:", {
+    hasPublicKey: !!process.env.EMAILJS_PUBLIC_KEY,
+    hasPrivateKey: !!process.env.EMAILJS_PRIVATE_KEY, // <--- If this is false, that's the error
+    privateKeyLength: process.env.EMAILJS_PRIVATE_KEY ? process.env.EMAILJS_PRIVATE_KEY.length : 0
+});
 
   try {
     const payload = {
