@@ -2,7 +2,7 @@ const moment = require('moment');
 const { sendEmailJS } = require('../config/emailConfig');
 
 // --- CONFIGURATION: Hardcoded to ensure they are not undefined ---
-const SERVICE_ID = 'service_ttw7mve'; 
+const SERVICE_ID = 'service_n09twwl'; 
 const TUTOR_TEMPLATE_ID = 'template_93kap4p';
 const STUDENT_TEMPLATE_ID = 'template_rbtg2jf';
 
