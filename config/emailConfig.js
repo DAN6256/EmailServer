@@ -27,4 +27,4 @@ const sendEmailJS = async (serviceId, templateId, templateParams) => {
 
 
 
-module.exports = { sendEmailJS, testEmailConfig };
+module.exports = { sendEmailJS };
