@@ -1,12 +1,10 @@
 const moment = require('moment');
 const { sendEmailJS } = require('../config/emailConfig');
 
-// --- CONFIGURATION: Hardcoded to ensure they are not undefined ---
-const SERVICE_ID = 'service_n09twwl'; 
-const TUTOR_TEMPLATE_ID = 'template_93kap4p';
-const STUDENT_TEMPLATE_ID = 'template_rbtg2jf';
+const SERVICE_ID = process.env.SERVICE_ID; 
+const TUTOR_TEMPLATE_ID = process.env.TUTOR_TEMPLATE_ID;
+const STUDENT_TEMPLATE_ID = process.env.STUDENT_TEMPLATE_ID;
 
-// --- HELPER: Generate Google Calendar Link ---
 const generateGoogleCalendarLink = (subject, details, time) => {
   try {
     const startDate = new Date(time);
@@ -27,12 +25,13 @@ const generateGoogleCalendarLink = (subject, details, time) => {
   }
 };
 
+//I will implement this later
 const sendApplicationConfirmation = async (data) => {
     console.log("Application confirmation log only (Template not set up)");
     return { success: true, message: 'Log only: EmailJS template needed' };
 };
 
-// Main Booking Confirmation Function
+
 const sendBookingConfirmation = async (data) => {
   try {
     let { 
@@ -41,14 +40,11 @@ const sendBookingConfirmation = async (data) => {
       subject, topic, selected_time 
     } = data;
 
-    // 1. Sanitize inputs
     student_email = student_email ? student_email.trim() : '';
     tutor_email = tutor_email ? tutor_email.trim() : '';
 
-    // 2. Format the date
     const formatted_time = moment(selected_time).format('dddd, MMM Do YYYY, h:mm A');
 
-    // 3. Generate Calendar Links
     const tutorCalLink = generateGoogleCalendarLink(
       `Tutoring: ${subject} with ${student_name}`, 
       `Topic: ${topic}\nStudent: ${student_name} (${student_email})`, 
@@ -61,7 +57,6 @@ const sendBookingConfirmation = async (data) => {
       selected_time
     );
 
-    // 4. Prepare Data
     const studentParams = {
       to_email: student_email,
       student_name: student_name,
@@ -85,22 +80,16 @@ const sendBookingConfirmation = async (data) => {
       calendar_link: tutorCalLink
     };
 
-    // DEBUG LOG: Ensure IDs are present before sending
-    console.log(`Sending via Service: ${SERVICE_ID}`);
-    console.log(`Student Template: ${STUDENT_TEMPLATE_ID}, Tutor Template: ${TUTOR_TEMPLATE_ID}`);
-
-    // 5. Send Requests
     const [studentRes, tutorRes] = await Promise.all([
       sendEmailJS(SERVICE_ID, STUDENT_TEMPLATE_ID, studentParams),
       sendEmailJS(SERVICE_ID, TUTOR_TEMPLATE_ID, tutorParams)
     ]);
 
-    // 6. Check results
+   
     if (studentRes.success && tutorRes.success) {
-      console.log(`✅ Emails sent successfully to ${student_email} and ${tutor_email}`);
       return { success: true, message: 'Booking confirmation emails sent successfully' };
     } else {
-      console.error('❌ Partial or full failure in EmailJS sending');
+      console.error('Partial or full failure in EmailJS sending');
       return { 
         success: false, 
         error: 'Email sending failed', 
