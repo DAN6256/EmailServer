@@ -1,29 +1,47 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 require('dotenv').config();
 
-// Create transporter with SSL configuration fix
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false 
-  }
-});
+// EmailJS API Endpoint
+const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
-// Test email configuration
-const testEmailConfig = async () => {
+/**
+ * Sends an email via EmailJS REST API
+ * @param {string} serviceId - Your EmailJS Service ID
+ * @param {string} templateId - Your EmailJS Template ID
+ * @param {object} templateParams - The variables defined in your template
+ */
+const sendEmailJS = async (serviceId, templateId, templateParams) => {
   try {
-    await transporter.verify();
-    return { success: true, message: 'Email configuration is valid' };
+    const payload = {
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: process.env.EMAILJS_PUBLIC_KEY,      // From .env
+      accessToken: process.env.EMAILJS_PRIVATE_KEY, // From .env (CRITICAL for backend)
+      template_params: templateParams
+    };
+
+    // Send POST request to EmailJS
+    const response = await axios.post(EMAILJS_URL, payload);
+    return { success: true, data: response.data };
+
   } catch (error) {
-    return { success: false, error: 'Email configuration failed', details: error.message };
+    console.error('EmailJS Error:', error.response ? error.response.data : error.message);
+    return { 
+      success: false, 
+      error: error.response ? error.response.data : error.message 
+    };
   }
 };
 
+// Simple test function to check if keys exist
+const testEmailConfig = async () => {
+  if (!process.env.EMAILJS_PUBLIC_KEY || !process.env.EMAILJS_PRIVATE_KEY) {
+    return { success: false, error: 'Missing EmailJS Public or Private keys in .env' };
+  }
+  return { success: true, message: 'EmailJS configuration is ready' };
+};
+
 module.exports = {
-  transporter,
+  sendEmailJS,
   testEmailConfig
 };
