@@ -1,30 +1,29 @@
-const axios = require('axios');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
+// Create transporter with SSL configuration fix
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false 
+  }
+});
 
-const sendEmailJS = async (serviceId, templateId, templateParams) => {
-
+// Test email configuration
+const testEmailConfig = async () => {
   try {
-    const payload = {
-      service_id: serviceId,
-      template_id: templateId,
-      user_id: process.env.EMAILJS_PUBLIC_KEY,      
-      accessToken: process.env.EMAILJS_PRIVATE_KEY, 
-      template_params: templateParams
-    };
-
-    const response = await axios.post(EMAILJS_URL, payload);
-    return { success: true, data: response.data };
-
+    await transporter.verify();
+    return { success: true, message: 'Email configuration is valid' };
   } catch (error) {
-    
-    const errMsg = error.response ? JSON.stringify(error.response.data) : error.message;
-    console.error('EmailJS API Error:', errMsg);
-    return { success: false, error: errMsg };
+    return { success: false, error: 'Email configuration failed', details: error.message };
   }
 };
 
-
-
-module.exports = { sendEmailJS };
+module.exports = {
+  transporter,
+  testEmailConfig
+};

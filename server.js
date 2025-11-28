@@ -16,9 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
-  origin: [process.env.ORIGIN_1, process.env.ORIGIN_2,process.env.ORIGIN_3] 
+  origin: [process.env.ORIGIN_1, process.env.ORIGIN_2, process.env.ORIGIN_3]
 }));
-
 
 // Swagger configuration
 const swaggerOptions = {
@@ -42,7 +41,6 @@ const swaggerOptions = {
         url: `https://emailserver-4gcn.onrender.com`,
         description: 'Production server'
       }
-      
     ],
     components: {
       schemas: {
@@ -209,29 +207,29 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 app.post('/api/send-application-confirmation', async (req, res) => {
   try {
     const { to_email, to_name, courses, submission_date } = req.body;
-    
+
     // Validate required fields
     if (!to_email || !to_name || !courses || !submission_date) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Missing required fields: to_email, to_name, courses, submission_date' 
+        error: 'Missing required fields: to_email, to_name, courses, submission_date'
       });
     }
-    
+
     const result = await sendApplicationConfirmation({ to_email, to_name, courses, submission_date });
-    
+
     if (result.success) {
       res.json(result);
     } else {
       res.status(500).json(result);
     }
-    
+
   } catch (error) {
     console.error('Error in application confirmation endpoint:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error', 
-      details: error.message 
+      error: 'Internal server error',
+      details: error.message
     });
   }
 });
@@ -272,48 +270,48 @@ app.post('/api/send-application-confirmation', async (req, res) => {
  */
 app.post('/api/send-booking-confirmation', async (req, res) => {
   try {
-    const { 
-      student_email, 
-      student_name, 
+    const {
+      student_email,
+      student_name,
       tutor_email,
       tutor_name,
       tutor_number,
-      subject, 
-      topic, 
-      selected_time 
+      subject,
+      topic,
+      selected_time
     } = req.body;
-    
+
     // Validate required fields
     if (!student_email || !student_name || !tutor_email || !tutor_name || !tutor_number || !subject || !topic || !selected_time) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Missing required fields: student_email, student_name, tutor_email, tutor_name, tutor_number, subject, topic, selected_time' 
+        error: 'Missing required fields: student_email, student_name, tutor_email, tutor_name, tutor_number, subject, topic, selected_time'
       });
     }
-    
-    const result = await sendBookingConfirmation({ 
-      student_email, 
-      student_name, 
+
+    const result = await sendBookingConfirmation({
+      student_email,
+      student_name,
       tutor_email,
       tutor_name,
       tutor_number,
-      subject, 
-      topic, 
-      selected_time 
+      subject,
+      topic,
+      selected_time
     });
-    
+
     if (result.success) {
       res.json(result);
     } else {
       res.status(500).json(result);
     }
-    
+
   } catch (error) {
     console.error('Error in booking confirmation endpoint:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error', 
-      details: error.message 
+      error: 'Internal server error',
+      details: error.message
     });
   }
 });
@@ -343,17 +341,17 @@ app.post('/api/send-booking-confirmation', async (req, res) => {
 app.get('/api/test-email', async (req, res) => {
   try {
     const result = await testEmailConfig();
-    
+
     if (result.success) {
       res.json(result);
     } else {
       res.status(500).json(result);
     }
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Email configuration test failed', 
-      details: error.message 
+      error: 'Email configuration test failed',
+      details: error.message
     });
   }
 });
@@ -438,7 +436,7 @@ app.get('/api/config', (req, res) => {
 
     // Check if any required environment variables are missing
     const missingVars = [];
-    
+
     // Check Firebase config
     Object.entries(config.FIREBASE_CONFIG).forEach(([key, value]) => {
       if (!value) missingVars.push(`FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);

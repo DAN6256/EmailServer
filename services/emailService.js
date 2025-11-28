@@ -1,109 +1,304 @@
-const moment = require('moment');
-const { sendEmailJS } = require('../config/emailConfig');
+const { transporter } = require("../config/emailConfig");
 
-const SERVICE_ID = process.env.SERVICE_ID; 
-const TUTOR_TEMPLATE_ID = process.env.TUTOR_TEMPLATE_ID;
-const STUDENT_TEMPLATE_ID = process.env.STUDENT_TEMPLATE_ID;
+const {
+  applicationConfirmationTemplate,
+  tutorBookingNotificationTemplate,
+  studentBookingConfirmationTemplate,
+} = require("../templates/emailTemplates");
 
-const generateGoogleCalendarLink = (subject, details, time) => {
+const {
+  generateICS,
+  generatePersonalizedICS,
+} = require("../utils/calendarUtils");
+
+// Send application confirmation email
+const sendApplicationConfirmation = async (data) => {
   try {
-    const startDate = new Date(time);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    const { to_email, to_name, courses, submission_date } = data;
 
-    const format = (d) => d.toISOString().replace(/-|:|\.\d{3}/g, '');
-    
-    const url = new URL('https://calendar.google.com/calendar/render');
-    url.searchParams.append('action', 'TEMPLATE');
-    url.searchParams.append('text', subject);
-    url.searchParams.append('dates', `${format(startDate)}/${format(endDate)}`);
-    url.searchParams.append('details', details);
-    
-    return url.toString();
-  } catch (e) {
-    console.error("Error generating calendar link", e);
-    return "https://calendar.google.com";
+    const template = applicationConfirmationTemplate({
+      to_name,
+      courses,
+      submission_date,
+    });
+
+    const mailOptions = {
+      from: `"Peer Tutoring Program" <${process.env.EMAIL_USER}>`,
+      to: to_email,
+      subject: template.subject,
+      text: template.textContent,
+      html: template.htmlContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return {
+      success: true,
+      message: "Application confirmation email sent successfully",
+    };
+  } catch (error) {
+    console.error("Error sending application confirmation:", error);
+
+    return {
+      success: false,
+      error: "Failed to send email",
+      details: error.message,
+    };
   }
 };
 
-//I will implement this later
-const sendApplicationConfirmation = async (data) => {
-    console.log("Application confirmation log only (Template not set up)");
-    return { success: true, message: 'Log only: EmailJS template needed' };
-};
-
-
+// Send booking confirmation emails with better calendar integration
 const sendBookingConfirmation = async (data) => {
   try {
-    let { 
-      student_email, student_name, 
-      tutor_email, tutor_name, tutor_number, 
-      subject, topic, selected_time 
+    const {
+      student_email,
+      student_name,
+      tutor_email,
+      tutor_name,
+      tutor_number,
+      subject,
+      topic,
+      selected_time,
     } = data;
 
-    student_email = student_email ? student_email.trim() : '';
-    tutor_email = tutor_email ? tutor_email.trim() : '';
-
-    const formatted_time = moment(selected_time).format('dddd, MMM Do YYYY, h:mm A');
-
-    const tutorCalLink = generateGoogleCalendarLink(
-      `Tutoring: ${subject} with ${student_name}`, 
-      `Topic: ${topic}\nStudent: ${student_name} (${student_email})`, 
-      selected_time
+    // Generate personalized calendar invites for better compatibility
+    const tutorICS = generatePersonalizedICS(
+      {
+        subject,
+        tutorName: tutor_name,
+        tutorEmail: tutor_email,
+        studentName: student_name,
+        studentEmail: student_email,
+        topic,
+        selectedTime: selected_time,
+      },
+      tutor_email,
+      tutor_name
     );
 
-    const studentCalLink = generateGoogleCalendarLink(
-      `Tutoring: ${subject} with ${tutor_name}`, 
-      `Topic: ${topic}\nTutor: ${tutor_name}\nContact: ${tutor_number}`, 
-      selected_time
+    const studentICS = generatePersonalizedICS(
+      {
+        subject,
+        tutorName: tutor_name,
+        tutorEmail: tutor_email,
+        studentName: student_name,
+        studentEmail: student_email,
+        topic,
+        selectedTime: selected_time,
+      },
+      student_email,
+      student_name
     );
 
-    const studentParams = {
-      to_email: student_email,
-      student_name: student_name,
-      tutor_name: tutor_name,
-      tutor_email: tutor_email,
-      tutor_number: tutor_number,
-      subject: subject,
-      topic: topic,
-      formatted_time: formatted_time,
-      calendar_link: studentCalLink
+    // Prepare tutor notification email
+    const tutorTemplate = tutorBookingNotificationTemplate({
+      tutor_name,
+      student_name,
+      student_email,
+      subject,
+      topic,
+      selected_time,
+    });
+
+    // Prepare student confirmation email
+    const studentTemplate = studentBookingConfirmationTemplate({
+      student_name,
+      tutor_name,
+      tutor_email,
+      tutor_number,
+      subject,
+      topic,
+      selected_time,
+    });
+
+    // Send email to tutor with calendar invite
+    const tutorMailOptions = {
+      from: `"Peer Tutoring System" <${process.env.EMAIL_USER}>`,
+      to: tutor_email,
+      subject: tutorTemplate.subject,
+      text: tutorTemplate.textContent,
+      html: tutorTemplate.htmlContent,
+      icalEvent: {
+        filename: "invite.ics",
+        method: "REQUEST",
+        content: tutorICS,
+      },
+      attachments: [
+        {
+          filename: "tutoring-session.ics",
+          content: Buffer.from(tutorICS, "utf8"),
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+        },
+      ],
     };
 
-    const tutorParams = {
-      to_email: tutor_email,
-      tutor_name: tutor_name,
-      student_name: student_name,
-      student_email: student_email,
-      subject: subject,
-      topic: topic,
-      formatted_time: formatted_time,
-      calendar_link: tutorCalLink
+    // Send email to student with calendar invite
+    const studentMailOptions = {
+      from: `"Peer Tutoring System" <${process.env.EMAIL_USER}>`,
+      to: student_email,
+      subject: studentTemplate.subject,
+      text: studentTemplate.textContent,
+      html: studentTemplate.htmlContent,
+      icalEvent: {
+        filename: "invite.ics",
+        method: "REQUEST",
+        content: studentICS,
+      },
+      attachments: [
+        {
+          filename: "tutoring-session.ics",
+          content: Buffer.from(studentICS, "utf8"),
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+        },
+      ],
     };
 
-    const [studentRes, tutorRes] = await Promise.all([
-      sendEmailJS(SERVICE_ID, STUDENT_TEMPLATE_ID, studentParams),
-      sendEmailJS(SERVICE_ID, TUTOR_TEMPLATE_ID, tutorParams)
+    // Send both emails
+    await Promise.all([
+      transporter.sendMail(tutorMailOptions),
+      transporter.sendMail(studentMailOptions),
     ]);
 
-   
-    if (studentRes.success && tutorRes.success) {
-      return { success: true, message: 'Booking confirmation emails sent successfully' };
-    } else {
-      console.error('Partial or full failure in EmailJS sending');
-      return { 
-        success: false, 
-        error: 'Email sending failed', 
-        details: { student: studentRes, tutor: tutorRes } 
-      };
-    }
-
+    return {
+      success: true,
+      message: "Booking confirmation emails sent successfully to both tutor and student",
+    };
   } catch (error) {
-    console.error('Error in booking confirmation service:', error);
-    return { success: false, error: 'Internal Server Error', details: error.message };
+    console.error("Error sending booking confirmation:", error);
+
+    return {
+      success: false,
+      error: "Failed to send email",
+      details: error.message,
+    };
+  }
+};
+
+// Alternative approach: Send personalized calendar invites
+const sendBookingConfirmationWithPersonalizedInvites = async (data) => {
+  try {
+    const {
+      student_email,
+      student_name,
+      tutor_email,
+      tutor_name,
+      tutor_number,
+      subject,
+      topic,
+      selected_time,
+    } = data;
+
+    // Generate separate ICS for tutor and student
+    const tutorICS = generatePersonalizedICS(
+      {
+        subject,
+        tutorName: tutor_name,
+        tutorEmail: tutor_email,
+        studentName: student_name,
+        studentEmail: student_email,
+        topic,
+        selectedTime: selected_time,
+      },
+      true
+    );
+
+    const studentICS = generatePersonalizedICS(
+      {
+        subject,
+        tutorName: tutor_name,
+        tutorEmail: tutor_email,
+        studentName: student_name,
+        studentEmail: student_email,
+        topic,
+        selectedTime: selected_time,
+      },
+      false
+    );
+
+    // Prepare templates
+    const tutorTemplate = tutorBookingNotificationTemplate({
+      tutor_name,
+      student_name,
+      student_email,
+      subject,
+      topic,
+      selected_time,
+    });
+
+    const studentTemplate = studentBookingConfirmationTemplate({
+      student_name,
+      tutor_name,
+      tutor_email,
+      tutor_number,
+      subject,
+      topic,
+      selected_time,
+    });
+
+    // Send personalized emails
+    const tutorMailOptions = {
+      from: `"Peer Tutoring System" <${process.env.EMAIL_USER}>`,
+      to: tutor_email,
+      subject: tutorTemplate.subject,
+      text: tutorTemplate.textContent,
+      html: tutorTemplate.htmlContent,
+      attachments: [
+        {
+          filename: "tutoring-session.ics",
+          content: tutorICS,
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+        },
+      ],
+      alternatives: [
+        {
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+          content: tutorICS,
+        },
+      ],
+    };
+
+    const studentMailOptions = {
+      from: `"Peer Tutoring System" <${process.env.EMAIL_USER}>`,
+      to: student_email,
+      subject: studentTemplate.subject,
+      text: studentTemplate.textContent,
+      html: studentTemplate.htmlContent,
+      attachments: [
+        {
+          filename: "tutoring-session.ics",
+          content: studentICS,
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+        },
+      ],
+      alternatives: [
+        {
+          contentType: "text/calendar; charset=utf-8; method=REQUEST",
+          content: studentICS,
+        },
+      ],
+    };
+
+    await Promise.all([
+      transporter.sendMail(tutorMailOptions),
+      transporter.sendMail(studentMailOptions),
+    ]);
+
+    return {
+      success: true,
+      message: "Personalized booking confirmation emails sent successfully",
+    };
+  } catch (error) {
+    console.error("Error sending personalized booking confirmation:", error);
+
+    return {
+      success: false,
+      error: "Failed to send email",
+      details: error.message,
+    };
   }
 };
 
 module.exports = {
   sendApplicationConfirmation,
-  sendBookingConfirmation
+  sendBookingConfirmation,
 };
